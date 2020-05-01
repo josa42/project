@@ -2,12 +2,14 @@ package project
 
 import (
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 
 	"github.com/josa42/project/pkg/license"
 	"github.com/josa42/project/pkg/out"
 	"github.com/josa42/project/pkg/readme"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
@@ -17,18 +19,11 @@ type Config struct {
 }
 
 type Template struct {
-	path string `yaml:"-"`
-	Name string `yaml:"name"`
-
-	Init []string
+	Init []string `yaml:"init"`
 }
 
 func DefaultTemplate() *Template {
 	t := &Template{}
-
-	// TODO
-	t.Name = "Test Project"
-
 	t.Init = []string{}
 
 	return t
@@ -43,10 +38,19 @@ func GetConfig() *Config {
 }
 
 func LoadTemplate(path string) *Template {
-	t := &Template{path: path}
+	t := &Template{}
 
-	// TODO
-	t.Name = "Test Project"
+	data, err := ioutil.ReadFile(filepath.Join(path, "project.yml"))
+	if err != nil {
+		out.Logf(`error: %v`, err)
+		os.Exit(1)
+	}
+
+	err = yaml.Unmarshal(data, &t)
+	if err != nil {
+		out.Logf(`error: %v`, err)
+		os.Exit(1)
+	}
 
 	return t
 }
