@@ -9,6 +9,7 @@ import (
 	"github.com/josa42/project/pkg/license"
 	"github.com/josa42/project/pkg/out"
 	"github.com/josa42/project/pkg/readme"
+	"github.com/josa42/project/pkg/template"
 	"gopkg.in/yaml.v2"
 )
 
@@ -98,6 +99,7 @@ func (t *Template) CreateFileTree(baseDir string, config *Config) error {
 func (t *Template) RunInit(baseDir string, config *Config) error {
 
 	for _, init := range t.Init {
+		init = template.Apply(init, t.placeholders(baseDir, config))
 		out.Logf("Run: %s", init)
 		if err := run(baseDir, "bash", "-c", init); err != nil {
 			return err
