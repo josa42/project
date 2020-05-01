@@ -2,7 +2,10 @@ package license
 
 //go:generate go run ../../generate/license.go "MIT"
 
-import "github.com/josa42/project/pkg/template"
+import (
+	"github.com/josa42/go-stringutils"
+	"github.com/josa42/project/pkg/template"
+)
 
 type Placeholders interface {
 	AuthorFull() string
@@ -11,7 +14,8 @@ type Placeholders interface {
 
 func Get(key string, p Placeholders) string {
 	if text, ok := licenses[key]; ok {
-		return template.Apply(text, 80, p)
+		text = stringutils.Wrap(text, 80)
+		return template.Apply(text, p)
 	}
 
 	return ""

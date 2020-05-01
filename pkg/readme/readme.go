@@ -21,11 +21,11 @@ type Placeholders interface {
 func Get(p Placeholders) string {
 
 	sections := []string{
-		template.Apply(head, 80, p),
+		template.Apply(head, p),
 	}
 
 	if p.License() != "" {
-		sections = append(sections, template.Apply(license, 80, p))
+		sections = append(sections, template.Apply(license, p))
 	}
 
 	return strings.Join(sections, "\n\n")

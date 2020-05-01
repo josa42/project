@@ -1,6 +1,7 @@
 package project
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -19,7 +20,9 @@ type Config struct {
 }
 
 type Template struct {
-	Init []string `yaml:"init"`
+	path  string     `yaml:"-"`
+	Files []FileNode `yaml:"files"`
+	Init  []string   `yaml:"init"`
 }
 
 func DefaultTemplate() *Template {
@@ -38,7 +41,7 @@ func GetConfig() *Config {
 }
 
 func LoadTemplate(path string) *Template {
-	t := &Template{}
+	t := &Template{path: path}
 
 	data, err := ioutil.ReadFile(filepath.Join(path, "project.yml"))
 	if err != nil {
@@ -87,6 +90,11 @@ func (t *Template) CreateReadme(baseDir string, config *Config) error {
 }
 
 func (t *Template) CreateFileTree(baseDir string, config *Config) error {
+	out.Log("Create: Filetree")
+	fmt.Printf("%v\n", t.Files)
+
+	createFiles(baseDir, t.Files, t.placeholders(baseDir, config))
+
 	return nil
 }
 
