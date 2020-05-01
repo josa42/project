@@ -10,7 +10,6 @@ import (
 )
 
 func createFiles(baseDir string, nodes []FileNode, p *Placeholders) {
-
 	for _, node := range nodes {
 		if !node.IsValid() {
 			continue

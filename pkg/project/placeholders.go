@@ -2,7 +2,6 @@ package project
 
 import (
 	"fmt"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -44,11 +43,3 @@ func (p Placeholders) License() string {
 func (p Placeholders) Year() string {
 	return fmt.Sprintf("%d", time.Now().Local().Year())
 }
-
-func (p Placeholders) Exec(command string) string {
-	cmd := exec.Command("bash", "-c", command)
-	cmd.Dir = p.baseDir
-	out, _ := cmd.Output()
-	return string(out)
-}
-

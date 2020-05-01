@@ -3,6 +3,9 @@ package template
 import (
 	"bytes"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os/exec"
 	"regexp"
 	"strings"
 	"text/template"
@@ -13,18 +16,20 @@ import (
 
 var funcMap = template.FuncMap{
 	"camelCase":  changecase.ToCamel,
+	"constant":   changecase.ToConstant,
+	"dot":        changecase.ToDot,
+	"get":        get,
 	"lower":      changecase.ToLower,
 	"lowerFirst": changecase.ToLowerFirst,
+	"param":      changecase.ToParam,
+	"pascal":     changecase.ToPascal,
+	"path":       changecase.ToPath,
 	"replace":    replace,
+	"run":        run,
+	"snake":      changecase.ToSnake,
 	"title":      changecase.ToTitle,
 	"upper":      changecase.ToUpper,
 	"upperFirst": changecase.ToUpperFirst,
-	"pascal":     changecase.ToPascal,
-	"snake":      changecase.ToSnake,
-	"param":      changecase.ToParam,
-	"constant":   changecase.ToConstant,
-	"dot":        changecase.ToDot,
-	"path":       changecase.ToPath,
 }
 
 func Apply(text string, p interface{}) string {
@@ -47,3 +52,18 @@ func replace(str, exp, replace string) string {
 	}
 	return strings.ReplaceAll(str, exp, replace)
 }
+
+func run(command string) string {
+	cmd := exec.Command("bash", "-c", command)
+	out, _ := cmd.Output()
+	return string(out)
+}
+
+func get(url string) string {
+	resp, _ := http.Get(url)
+	content, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	return string(content)
+}
+

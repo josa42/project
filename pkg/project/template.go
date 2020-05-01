@@ -91,8 +91,6 @@ func (t *Template) CreateReadme(baseDir string, config *Config) error {
 
 func (t *Template) CreateFileTree(baseDir string, config *Config) error {
 	out.Log("Create: Filetree")
-	fmt.Printf("%v\n", t.Files)
-
 	createFiles(baseDir, t.Files, t.placeholders(baseDir, config))
 
 	return nil
@@ -132,6 +130,5 @@ func (t *Template) placeholders(baseDir string, config *Config) *Placeholders {
 func run(baseDir, bin string, args ...string) error {
 	cmd := exec.Command(bin, args...)
 	cmd.Dir = baseDir
-	return cmd.Run()
 }
 
