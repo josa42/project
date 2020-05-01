@@ -1,7 +1,6 @@
 package project
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -130,5 +129,6 @@ func (t *Template) placeholders(baseDir string, config *Config) *Placeholders {
 func run(baseDir, bin string, args ...string) error {
 	cmd := exec.Command(bin, args...)
 	cmd.Dir = baseDir
+	return cmd.Run()
 }
 

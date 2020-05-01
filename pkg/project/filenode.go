@@ -36,7 +36,9 @@ type FileNode struct {
 	File         string     `yaml:"file"`
 	Template     string     `yaml:"template"`
 	TemplateFile string     `yaml:"template_file"`
+	TemplateURL  string     `yaml:"template_url"`
 	Content      string     `yaml:"content"`
+	ContentFile  string     `yaml:"content_file"`
 	ContentURL   string     `yaml:"content_url"`
 }
 
@@ -62,9 +64,13 @@ func (n FileNode) Name(p *Placeholders) string {
 func (n FileNode) FileContent(p *Placeholders) string {
 
 	if n.TemplateFile != "" {
-		tmplPath := filepath.Join(p.template.path, "files", n.TemplateFile)
-		tmpl, _ := ioutil.ReadFile(tmplPath)
-		return template.Apply(string(tmpl), p)
+		tmpl := readFile(p.template.path, n.TemplateFile)
+		return template.Apply(tmpl, p)
+	}
+
+	if n.TemplateURL != "" {
+		tmpl := readURL(n.TemplateURL)
+		return template.Apply(tmpl, p)
 	}
 
 	if n.Template != "" {
@@ -72,13 +78,28 @@ func (n FileNode) FileContent(p *Placeholders) string {
 	}
 
 	if n.ContentURL != "" {
-		resp, _ := http.Get(n.ContentURL)
-		content, _ := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
+		return readURL(n.ContentURL)
+	}
 
-		return string(content)
+	if n.ContentFile != "" {
+		return readFile(p.template.path, n.ContentFile)
 	}
 
 	return n.Content
+}
+
+func readFile(tmplDir, path string) string {
+	filePath := filepath.Join(tmplDir, "files", path)
+	content, _ := ioutil.ReadFile(filePath)
+
+	return string(content)
+
+}
+func readURL(url string) string {
+	resp, _ := http.Get(url)
+	content, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	return string(content)
 }
 
