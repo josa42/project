@@ -2,6 +2,8 @@ package project
 
 import (
 	"fmt"
+	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -10,17 +12,17 @@ import (
 type Placeholders struct {
 	config   *Config
 	template *Template
-	slug     string
+	baseDir  string
 }
 
 var titleExp = regexp.MustCompile(`[-_]`)
 
 func (p Placeholders) Name() string {
-	return strings.Title(titleExp.ReplaceAllString(p.slug, " "))
+	return strings.Title(titleExp.ReplaceAllString(p.Slug(), " "))
 }
 
 func (p Placeholders) Slug() string {
-	return p.slug
+	return filepath.Base(p.baseDir)
 }
 
 func (p Placeholders) Author() string {
@@ -41,5 +43,12 @@ func (p Placeholders) License() string {
 
 func (p Placeholders) Year() string {
 	return fmt.Sprintf("%d", time.Now().Local().Year())
+}
+
+func (p Placeholders) Exec(command string) string {
+	cmd := exec.Command("bash", "-c", command)
+	cmd.Dir = p.baseDir
+	out, _ := cmd.Output()
+	return string(out)
 }
 

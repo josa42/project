@@ -114,7 +114,7 @@ func (t *Template) RunCommit(baseDir string, config *Config) error {
 }
 
 func (t *Template) placeholders(baseDir string, config *Config) *Placeholders {
-	return &Placeholders{config, t, filepath.Base(baseDir)}
+	return &Placeholders{config, t, baseDir}
 }
 
 func run(baseDir, bin string, args ...string) error {
