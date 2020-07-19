@@ -9,7 +9,7 @@ import (
 	"os/user"
 	"path/filepath"
 
-	"github.com/josa42/project/pkg/project"
+	"github.com/josa42/project/pkg/create"
 	"github.com/spf13/cobra"
 )
 
@@ -31,14 +31,14 @@ to quickly create a Cobra application.`,
 
 		pwd, _ := os.Getwd()
 
-		var p *project.Template
+		var p *create.Template
 
 		if key != "" {
 			usr, _ := user.Current()
 			tplPath := filepath.Join(usr.HomeDir, ".config", "project", "templates", key)
-			p = project.LoadTemplate(tplPath)
+			p = create.LoadTemplate(tplPath)
 		} else {
-			p = project.DefaultTemplate()
+			p = create.DefaultTemplate()
 		}
 
 		p.Create(pwd)
