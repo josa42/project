@@ -1,0 +1,31 @@
+tasks:
+  start: npm start
+  test: npm test
+
+files:
+  model:
+    path: src/models/{**}/{*|className}.js
+    related: [view, controler]
+  controler:
+    path: src/controlers/{**}/{*|className}.js
+    related:
+      - model
+      - view
+  test:
+    path:
+      - src/models/{**}/{*|className}.test.js
+      - src/controler/{**}/{*|className}.test.js
+    related:
+      - model
+      - controler
+  view:
+    path: src/templates/{**}/{*|param}.hbs
+    related:
+      - model
+      - controler
+  style:
+    path: src/styles/{**}/{*|param}.scss
+    related:
+      - model
+      - controler
+

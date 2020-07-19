@@ -43,7 +43,7 @@ func GetConfig() *Config {
 func LoadTemplate(path string) *Template {
 	t := &Template{path: path}
 
-	data, err := ioutil.ReadFile(filepath.Join(path, "project.yml"))
+	data, err := ioutil.ReadFile(filepath.Join(path, "project-create.yml"))
 	if err != nil {
 		out.Logf(`error: %v`, err)
 		os.Exit(1)
@@ -133,4 +133,3 @@ func run(baseDir, bin string, args ...string) error {
 	cmd.Dir = baseDir
 	return cmd.Run()
 }
-
