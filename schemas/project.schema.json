@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+
+  "title": "Project",
+  "description": "",
+
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tasks": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.*$": { "$ref": "#/definitions/task" }
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^.*$": { "$ref": "#/definitions/fileType" }
+      }
+    }
+  },
+
+  "definitions": {
+    "task": { "type": "string" },
+    "fileType": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "oneOf": [
+            { "$ref": "#/definitions/pathPattern" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/pathPattern" },
+              "minItems": 1
+            }
+          ]
+        },
+        "related": {
+          "oneOf": [
+            { "$ref": "#/definitions/typeKey" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/typeKey" },
+              "minItems": 1
+            }
+          ]
+        }
+      }
+    },
+    "pathPattern": { "type": "string", "minLength": 1 },
+    "typeKey": { "type": "string", "minLength": 1 }
+  }
+}

@@ -1,0 +1,10 @@
+tasks:
+  test: go test ./...
+
+files:
+  test:
+    path: "{**}_test.go"
+    related: "source"
+  source:
+    path: "{**}.go"
+    related: "test"
