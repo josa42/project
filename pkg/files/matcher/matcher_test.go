@@ -41,6 +41,9 @@ func Test_toGlobPattern(t *testing.T) {
 		{"empty", args{""}, ""},
 		{"single star", args{"dir/{*}.js"}, "dir/*.js"},
 		{"double star", args{"dir/{**}.js"}, "dir/**/*.js"},
+		{"transform", args{"dir/{*|dashed}.js"}, "dir/*.js"},
+		{"named", args{"dir/{*:path}.js"}, "dir/*.js"},
+		{"transform and named", args{"dir/{*|dashed:path}.js"}, "dir/*.js"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

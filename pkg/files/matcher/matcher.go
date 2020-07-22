@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	wildcards = regexp.MustCompile(`{(\*\*?)(:([a-z]+))?}`)
+	wildcards = regexp.MustCompile(`{(\*\*?)(\|([^:}]+))?(:([a-z]+))?}`)
 )
 
 func FindFiles(dir, pattern string) []string {
@@ -45,7 +45,6 @@ func starReplace(star string) string {
 	default:
 		return star
 	}
-
 }
 
 func cd(dir string) func() {
