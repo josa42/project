@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/josa42/project/pkg/files/matcher"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
@@ -21,10 +22,12 @@ func TestFileType(t *testing.T) {
 
 		err := yaml.Unmarshal([]byte(`
 path: controlers/{*}.js
+exclude: controlers/{*}.test.js
 related: view`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []string{"controlers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.test.js"}, ft.ExcludePatterns)
 		assert.Equal(t, []string{"view"}, ft.RelatedKeys)
 	})
 
@@ -35,12 +38,14 @@ related: view`), &ft)
 path:
   - controlers/{*}.js
   - sub/controlers/{*}.js
+exclude: [ "controlers/{*}.test.js" ]
 related:
   - view
   - test`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []string{"controlers/{*}.js", "sub/controlers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.js", "sub/controlers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.test.js"}, ft.ExcludePatterns)
 		assert.Equal(t, []string{"view", "test"}, ft.RelatedKeys)
 	})
 
@@ -63,7 +68,7 @@ func TestLoadProjeFile(t *testing.T) {
 	assert.Equal(t, "go test ./...", proj.Tasks["test"].Command)
 
 	assert.Equal(t, "test", proj.Files["test"].Key)
-	assert.Equal(t, []string{"{**}_test.go"}, proj.Files["test"].PathPatterns)
+	assert.Equal(t, []matcher.FilePattern{"{**}_test.go"}, proj.Files["test"].PathPatterns)
 	assert.Equal(t, []string{"source"}, proj.Files["test"].RelatedKeys)
 
 }

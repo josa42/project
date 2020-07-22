@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/josa42/project/pkg/files/matcher"
 	"gopkg.in/yaml.v2"
 )
 
@@ -51,9 +52,10 @@ type Project struct {
 }
 
 type FileType struct {
-	Key          string   `yaml:"-"`
-	PathPatterns []string `yaml:"path"`
-	RelatedKeys  []string `yaml:"related"`
+	Key             string                `yaml:"-"`
+	PathPatterns    []matcher.FilePattern `yaml:"path"`
+	ExcludePatterns []matcher.FilePattern `yaml:"exclude"`
+	RelatedKeys     []string              `yaml:"related"`
 }
 
 func (ft *FileType) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -63,10 +65,19 @@ func (ft *FileType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 		return err
 	}
 
-	ft.PathPatterns = stringOrSlice(d["path"])
+	ft.PathPatterns = patternOrSlice(d["path"])
+	ft.ExcludePatterns = patternOrSlice(d["exclude"])
 	ft.RelatedKeys = stringOrSlice(d["related"])
 
 	return nil
+}
+
+func patternOrSlice(in interface{}) []matcher.FilePattern {
+	patterns := []matcher.FilePattern{}
+	for _, p := range stringOrSlice(in) {
+		patterns = append(patterns, matcher.FilePattern(p))
+	}
+	return patterns
 }
 
 func stringOrSlice(in interface{}) []string {

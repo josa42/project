@@ -40,6 +40,16 @@
             }
           ]
         },
+        "exclude": {
+          "oneOf": [
+            { "$ref": "#/definitions/pathPattern" },
+            {
+              "type": "array",
+              "items": { "$ref": "#/definitions/pathPattern" },
+              "minItems": 1
+            }
+          ]
+        },
         "related": {
           "oneOf": [
             { "$ref": "#/definitions/typeKey" },
