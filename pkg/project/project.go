@@ -6,8 +6,19 @@ import (
 	"path/filepath"
 
 	"github.com/josa42/project/pkg/files/matcher"
+	"github.com/josa42/project/pkg/out"
 	"gopkg.in/yaml.v2"
 )
+
+func MustLoad(dir string) *Project {
+	projPath := FindProjeFile(".")
+	if projPath == "" {
+		out.Log("Could not find project.yml")
+		os.Exit(1)
+	}
+
+	return LoadProjeFile(projPath)
+}
 
 func FindProjeFile(dirPath string) string {
 	if !filepath.IsAbs(dirPath) {
@@ -67,6 +78,30 @@ func (p Project) FindFiles(key string) []string {
 	return files
 }
 
+func (p Project) AlternateFiles(key, filePath string) []string {
+	files := []string{}
+
+	ftr := p.Files[key]
+
+	for _, ft := range p.Files {
+		if ft.isRelated(key) {
+			for _, fp := range ft.PathPatterns {
+				if !ft.isExcluded(filePath) && len(fp.Match(filePath)) > 0 {
+					g := fp.Groups(filePath)
+
+					for _, fpr := range ftr.PathPatterns {
+						if rPath, err := fpr.Fill(g); err == nil {
+							files = append(files, rPath)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return files
+}
+
 type FileType struct {
 	Key             string                `yaml:"-"`
 	PathPatterns    []matcher.FilePattern `yaml:"path"`
@@ -91,6 +126,15 @@ func (ft *FileType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 func (ft FileType) isExcluded(filePath string) bool {
 	for _, ex := range ft.ExcludePatterns {
 		if ex.Match(filePath) != nil {
+			return true
+		}
+	}
+	return false
+}
+
+func (ft FileType) isRelated(key string) bool {
+	for _, akey := range ft.RelatedKeys {
+		if akey == key {
 			return true
 		}
 	}

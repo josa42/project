@@ -115,7 +115,6 @@ func (fp FilePattern) Match(path string) map[string]string {
 
 	gn := groupNames(string(fp))
 	exp := regexp.MustCompile(toExpr(string(fp)))
-
 	matches := exp.FindAllStringSubmatch(path, -1)
 
 	if len(matches) > 0 {
@@ -145,4 +144,17 @@ func (fp FilePattern) Fill(groups map[string]string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func (fp FilePattern) Groups(filePath string) map[string]string {
+	gn := groupNames(string(fp))
+	exp := regexp.MustCompile(toExpr(string(fp)))
+	matches := exp.FindAllStringSubmatch(filePath, -1)
+
+	groups := map[string]string{}
+	for idx, m := range matches {
+		groups[gn[idx]] = m[1]
+	}
+
+	return groups
 }

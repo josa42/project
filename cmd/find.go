@@ -6,9 +6,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/josa42/project/pkg/out"
 	"github.com/josa42/project/pkg/project"
 	"github.com/spf13/cobra"
 )
@@ -19,13 +17,7 @@ var findCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		projPath := project.FindProjeFile(".")
-		if projPath == "" {
-			out.Log("Could not find project.yml")
-			os.Exit(1)
-		}
-
-		proj := project.LoadProjeFile(projPath)
+		proj := project.MustLoad(".")
 		key := args[0]
 
 		for _, f := range proj.FindFiles(key) {
