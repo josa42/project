@@ -78,7 +78,21 @@ func (p Project) FindFiles(key string) []string {
 	return files
 }
 
-func (p Project) AlternateFiles(key, filePath string) []string {
+func (p Project) RelatedKeys(filePath string) []string {
+	keys := []string{}
+
+	for _, ft := range p.Files {
+		for _, fp := range ft.PathPatterns {
+			if !ft.isExcluded(filePath) && len(fp.Match(filePath)) > 0 {
+				keys = append(keys, ft.RelatedKeys...)
+			}
+		}
+	}
+
+	return keys
+}
+
+func (p Project) RelatedFiles(key, filePath string) []string {
 	files := []string{}
 
 	ftr := p.Files[key]

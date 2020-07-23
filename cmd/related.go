@@ -11,22 +11,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// alternateCmd represents the alternate command
-var alternateCmd = &cobra.Command{
-	Use:     "alternate",
-	Aliases: []string{"alt"},
-	Short:   "",
-	Long:    ``,
+// relatedCmd represents the related command
+var relatedCmd = &cobra.Command{
+	Use:     "related",
+	Aliases: []string{"alt", "rel"},
 	Args:    cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		proj := project.MustLoad(".")
 
-		for _, f := range proj.AlternateFiles(args[0], args[1]) {
+		for _, f := range proj.RelatedFiles(args[0], args[1]) {
 			fmt.Println(f)
 		}
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(alternateCmd)
+	rootCmd.AddCommand(relatedCmd)
 }
