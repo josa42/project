@@ -16,7 +16,6 @@ func fixture(p ...string) string {
 }
 
 func TestFileType(t *testing.T) {
-
 	t.Run("single", func(t *testing.T) {
 		ft := FileType{}
 
@@ -70,5 +69,4 @@ func TestLoadProjeFile(t *testing.T) {
 	assert.Equal(t, "test", proj.Files["test"].Key)
 	assert.Equal(t, []matcher.FilePattern{"{**}_test.go"}, proj.Files["test"].PathPatterns)
 	assert.Equal(t, []string{"source"}, proj.Files["test"].RelatedKeys)
-
 }

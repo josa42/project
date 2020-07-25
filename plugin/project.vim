@@ -11,4 +11,10 @@ endfunction
 call remote#host#Register('project', 'x', function('s:StartPlugin'))
 call remote#host#RegisterPlugin('project', '0', [
     \   {'type': 'function', 'name': 'Alternate', 'sync': 1, 'opts': {}},
+    \   {'type': 'function', 'name': 'CompleteRelatedKey', 'sync': 1, 'opts': {}},
     \ ])
+
+
+command! A call Alternate('tabe')
+
+

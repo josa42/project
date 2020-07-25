@@ -1,7 +1,9 @@
 package project
 
 import (
+	"encoding/json"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -82,10 +84,8 @@ func (p Project) RelatedKeys(filePath string) []string {
 	keys := []string{}
 
 	for _, ft := range p.Files {
-		for _, fp := range ft.PathPatterns {
-			if !ft.isExcluded(filePath) && len(fp.Match(filePath)) > 0 {
-				keys = append(keys, ft.RelatedKeys...)
-			}
+		if ft.isMatching(filePath) {
+			keys = append(keys, ft.RelatedKeys...)
 		}
 	}
 
@@ -141,6 +141,17 @@ func (ft FileType) isExcluded(filePath string) bool {
 	for _, ex := range ft.ExcludePatterns {
 		if ex.Match(filePath) != nil {
 			return true
+		}
+	}
+	return false
+}
+
+func (ft FileType) isMatching(filePath string) bool {
+	if !ft.isExcluded(filePath) {
+		for _, ex := range ft.PathPatterns {
+			if ex.Match(filePath) != nil {
+				return true
+			}
 		}
 	}
 	return false

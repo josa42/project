@@ -22,25 +22,45 @@ func isAny(str string, options []string) bool {
 	return false
 }
 
+func currentFilePath(p *plugin.Plugin) string {
+	b, _ := p.Nvim.CurrentBuffer()
+	filePath := ""
+	p.Nvim.Call("expand", &filePath, fmt.Sprintf("#%d:p", b))
+
+	return filePath
+}
+
+func completeRelatedKey(p *plugin.Plugin) func(args []interface{}) ([]string, error) {
+	return func(args []interface{}) ([]string, error) {
+		proj := project.MustLoad(".")
+		filePath := currentFilePath(p)
+		keys := proj.RelatedKeys(filePath)
+
+		return keys, nil
+	}
+}
+
 func alternate(p *plugin.Plugin) func(args []string) error {
 	return func(args []string) error {
 		proj := project.MustLoad(".")
 
 		filePath, _ := p.Nvim.CommandOutput("echo expand('%')")
 
-		if len(args) == 0 || !isAny(args[0], []string{"edit", "tabedit", "vsplit", "split"}) {
+		if len(args) == 0 || !isAny(args[0], []string{"edit", "e", "tabedit", "tabe", "vsplit", "split"}) {
 			return errors.New("command missing")
 		}
 
-		keys := proj.RelatedKeys(filePath)
-
 		key := ""
-		if len(args) == 2 && isAny(args[1], keys) {
-			key = args[1]
-		} else if len(keys) > 0 {
+
+		keys := proj.RelatedKeys(filePath)
+		if len(keys) == 1 {
 			key = keys[0]
-		} else {
-			return errors.New("key missing")
+		} else if len(keys) > 1 {
+			p.Nvim.Call("input", &key, "key: ", "", "customlist,CompleteRelatedKey")
+		}
+
+		if !isAny(key, keys) {
+			return nil
 		}
 
 		for _, f := range proj.RelatedFiles(key, filePath) {
@@ -59,6 +79,7 @@ var neovimCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		plugin.Main(func(p *plugin.Plugin) error {
 			p.HandleFunction(&plugin.FunctionOptions{Name: "Alternate"}, alternate(p))
+			p.HandleFunction(&plugin.FunctionOptions{Name: "CompleteRelatedKey"}, completeRelatedKey(p))
 
 			return nil
 		})
