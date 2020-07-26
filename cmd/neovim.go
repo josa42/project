@@ -198,14 +198,30 @@ func openFile(p *plugin.Plugin, command, filePath string, force bool) error {
 }
 
 func open(p *plugin.Plugin) func(args []string) error {
-	return func(args []string) error {
+	var runOpen func(args []string) error
+
+	runOpen = func(args []string) error {
 
 		command, force, err := commandArg(args)
 		if err != nil {
 			return nil
 		}
 
-		inpt := strings.Split(prompt(p, "open", "", "CompleteOpen"), " ")
+		text := ""
+		if len(args) >= 2 {
+			if len(args[1]) == 0 {
+				return nil
+			}
+
+			text = fmt.Sprintf("%s ", args[1])
+		}
+
+		inpt := strings.Split(prompt(p, "open", text, "CompleteOpen"), " ")
+
+		if len(inpt) == 1 {
+			return runOpen([]string{args[0], inpt[0]})
+		}
+
 		if len(inpt) < 2 {
 			return nil
 		}
@@ -214,6 +230,8 @@ func open(p *plugin.Plugin) func(args []string) error {
 
 		return openFile(p, command, filePath, force)
 	}
+
+	return runOpen
 }
 
 func prompt(p *plugin.Plugin, label string, text string, complete string) string {
