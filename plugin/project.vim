@@ -11,7 +11,10 @@ endfunction
 call remote#host#Register('project', 'x', function('s:StartPlugin'))
 call remote#host#RegisterPlugin('project', '0', [
     \   {'type': 'function', 'name': 'Alternate', 'sync': 1, 'opts': {}},
+    \   {'type': 'function', 'name': 'ProjectOpen', 'sync': 1, 'opts': {}},
     \   {'type': 'function', 'name': 'CompleteRelatedKey', 'sync': 1, 'opts': {}},
+    \   {'type': 'function', 'name': 'CompleteKey', 'sync': 1, 'opts': {}},
+    \   {'type': 'function', 'name': 'CompleteOpen', 'sync': 1, 'opts': {}},
     \ ])
 
 " function! CompleteAlternate(a,b,c)
@@ -31,4 +34,5 @@ command! -nargs=0 -bang AT call Alternate('tab<bang>')
 command! -nargs=0 -bang AS call Alternate('split<bang>')
 command! -nargs=0 -bang AV call Alternate('vsplit<bang>')
 
-nmap <space>a :call Alternate(g:project_default_command)<cr>
+nmap <silent> <space>o :call ProjectOpen(g:project_default_command)<cr>
+nmap <silent> <space>a :call Alternate(g:project_default_command)<cr>

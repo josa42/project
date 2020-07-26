@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/josa42/project/pkg/project"
@@ -48,6 +49,44 @@ func completeRelatedKey(p *plugin.Plugin) func(args []interface{}) ([]string, er
 	}
 }
 
+func completeKey(p *plugin.Plugin) func(args []interface{}) ([]string, error) {
+	return func(args []interface{}) ([]string, error) {
+		proj := project.MustLoad(".")
+		keys := []string{}
+
+		for key := range proj.Files {
+			keys = append(keys, key)
+		}
+
+		return keys, nil
+	}
+}
+
+func completeOpen(p *plugin.Plugin) func(args []interface{}) ([]string, error) {
+	return func(args []interface{}) ([]string, error) {
+		pre := strings.Split(stringArg(args, 0), " ")
+
+		proj := project.MustLoad(".")
+
+		if len(pre) <= 1 {
+			keys := []string{}
+
+			for key := range proj.Files {
+				keys = append(keys, key)
+			}
+
+			return fuzzyMatch(keys, pre[0]), nil
+		}
+
+		key := pre[0]
+		pathPre := strings.Join(pre[1:], " ")
+
+		files := fuzzyMatch(proj.FindFiles(key), pathPre)
+
+		return prefix(files, fmt.Sprintf("%s ", key)), nil
+	}
+}
+
 func findTabWindow(p *plugin.Plugin, filePath string) (nvim.Tabpage, nvim.Window) {
 
 	tabs, _ := p.Nvim.Tabpages()
@@ -66,12 +105,49 @@ func findTabWindow(p *plugin.Plugin, filePath string) (nvim.Tabpage, nvim.Window
 	return nvim.Tabpage(-1), nvim.Window(-1)
 }
 
+func stringArg(args []interface{}, idx int) string {
+	if len(args) < idx+1 {
+		return ""
+	}
+
+	if str, ok := args[idx].(string); ok {
+		return str
+	}
+
+	return ""
+}
+
+func commandArg(args []string) (string, bool, error) {
+	target := "tab"
+	if len(args) >= 1 {
+		target = args[0]
+	}
+
+	command := ""
+	force := strings.HasSuffix(target, "!")
+
+	switch strings.Replace(target, "!", "", 1) {
+	case "window":
+		command = "edit"
+	case "tab":
+		command = "tabedit"
+	case "split":
+		command = target
+	case "vsplit":
+		command = target
+	default:
+		return "", force, errors.New("command missing")
+	}
+
+	return command, force, nil
+}
+
 func alternate(p *plugin.Plugin) func(args []string) error {
 	return func(args []string) error {
 
-		target := "tab"
-		if len(args) >= 1 {
-			target = args[0]
+		command, force, err := commandArg(args)
+		if err != nil {
+			return err
 		}
 
 		forceKey := ""
@@ -81,22 +157,6 @@ func alternate(p *plugin.Plugin) func(args []string) error {
 
 		proj := project.MustLoad(".")
 		filePath := currentFilePath(p)
-
-		command := ""
-		force := strings.HasSuffix(target, "!")
-
-		switch strings.Replace(target, "!", "", 1) {
-		case "window":
-			command = "edit"
-		case "tab":
-			command = "tabedit"
-		case "split":
-			command = target
-		case "vsplit":
-			command = target
-		default:
-			return errors.New("command missing")
-		}
 
 		if forceKey != "" {
 			files := proj.RelatedFiles(forceKey, filePath)
@@ -114,7 +174,7 @@ func alternate(p *plugin.Plugin) func(args []string) error {
 		if len(keys) == 1 {
 			key = keys[0]
 		} else if len(keys) > 1 {
-			p.Nvim.Call("input", &key, "key: ", "", "customlist,CompleteRelatedKey")
+			key = prompt(p, "key", "", "CompleteRelatedKey")
 		}
 
 		if f, ok := related[key]; ok {
@@ -137,6 +197,63 @@ func openFile(p *plugin.Plugin, command, filePath string, force bool) error {
 
 }
 
+func open(p *plugin.Plugin) func(args []string) error {
+	return func(args []string) error {
+
+		command, force, err := commandArg(args)
+		if err != nil {
+			return nil
+		}
+
+		inpt := strings.Split(prompt(p, "open", "", "CompleteOpen"), " ")
+		if len(inpt) < 2 {
+			return nil
+		}
+
+		filePath := strings.Join(inpt[1:], " ")
+
+		return openFile(p, command, filePath, force)
+	}
+}
+
+func prompt(p *plugin.Plugin, label string, text string, complete string) string {
+	out := ""
+	p.Nvim.Call("input", &out, fmt.Sprintf("%s: ", label), text, fmt.Sprintf("customlist,%s", complete))
+	return out
+}
+
+func prefix(options []string, prefix string) []string {
+
+	m := []string{}
+	for _, str := range options {
+		m = append(m, fmt.Sprintf("%s%s", prefix, str))
+	}
+
+	return m
+}
+
+func fuzzyMatch(options []string, input string) []string {
+
+	r := fuzzyRegexp(input)
+	m := []string{}
+	for _, str := range options {
+		if r.MatchString(str) {
+			m = append(m, str)
+		}
+	}
+
+	return m
+}
+
+func fuzzyRegexp(input string) *regexp.Regexp {
+	exp := []string{".*"}
+	for _, c := range strings.Split(input, "") {
+		exp = append(exp, regexp.QuoteMeta(c), ".*")
+	}
+
+	return regexp.MustCompile(strings.Join(exp, ""))
+}
+
 // neovimCmd represents the neovim command
 var neovimCmd = &cobra.Command{
 	Use:    "neovim",
@@ -145,7 +262,10 @@ var neovimCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		plugin.Main(func(p *plugin.Plugin) error {
 			p.HandleFunction(&plugin.FunctionOptions{Name: "Alternate"}, alternate(p))
+			p.HandleFunction(&plugin.FunctionOptions{Name: "ProjectOpen"}, open(p))
 			p.HandleFunction(&plugin.FunctionOptions{Name: "CompleteRelatedKey"}, completeRelatedKey(p))
+			p.HandleFunction(&plugin.FunctionOptions{Name: "CompleteKey"}, completeKey(p))
+			p.HandleFunction(&plugin.FunctionOptions{Name: "CompleteOpen"}, completeOpen(p))
 
 			return nil
 		})
