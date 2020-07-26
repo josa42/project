@@ -1,9 +1,7 @@
 package project
 
 import (
-	"encoding/json"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -90,6 +88,23 @@ func (p Project) RelatedKeys(filePath string) []string {
 	}
 
 	return keys
+}
+
+func (p Project) AllRelatedFiles(filePath string) ([]string, map[string]string) {
+	related := map[string]string{}
+	keys := []string{}
+
+	for _, key := range p.RelatedKeys(filePath) {
+		for _, file := range p.RelatedFiles(key, filePath) {
+			if _, err := os.Stat(file); err == nil {
+				related[key] = file
+				keys = append(keys, key)
+				break
+			}
+		}
+	}
+
+	return keys, related
 }
 
 func (p Project) RelatedFiles(key, filePath string) []string {

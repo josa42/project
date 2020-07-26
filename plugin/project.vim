@@ -14,7 +14,21 @@ call remote#host#RegisterPlugin('project', '0', [
     \   {'type': 'function', 'name': 'CompleteRelatedKey', 'sync': 1, 'opts': {}},
     \ ])
 
+" function! CompleteAlternate(a,b,c)
+"   return ['window', 'tab', 'tab!', 'split', 'vsplit']
+" endfunction
+" command! -nargs=? -complete=customlist,CompleteAlternate A call Alternate(<args>)
 
-command! A call Alternate('tabe')
+if !exists('g:project_default_command')
+    let g:project_default_command = 'tab'
+endif
 
 
+command! -nargs=0 -bang A call Alternate(g:project_default_command . '<bang>')
+
+command! -nargs=0 -bang AW call Alternate('window<bang>')
+command! -nargs=0 -bang AT call Alternate('tab<bang>')
+command! -nargs=0 -bang AS call Alternate('split<bang>')
+command! -nargs=0 -bang AV call Alternate('vsplit<bang>')
+
+nmap <space>a :call Alternate(g:project_default_command)<cr>
