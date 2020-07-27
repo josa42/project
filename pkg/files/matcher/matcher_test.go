@@ -284,24 +284,23 @@ func TestGroup_Pattern(t *testing.T) {
 }
 
 func TestGroup_Name(t *testing.T) {
-	type fields struct {
-		str  string
-		name string
-	}
 	tests := []struct {
-		name   string
-		fields fields
-		want   string
+		name string
+		path string
+		want string
 	}{
 		// TODO: Add test cases.
+		// {"empty", "", map[int]string{}},
+		// {"named", "{**:path}/file.js", map[int]string{0: "path"}},
+		// {"transformed", "{**|dashed}/file.js", map[int]string{0: "path"}},
+		// {"named and transformed", "{**|dashed:path}/file.js", map[int]string{0: "path"}},
+		// {"constant", "src/{controllers}/file.js", map[int]string{0: "path"}},
+		// {"constant and named", "src/{controllers:type}/file.js", map[int]string{0: "type"}},
+		// {"constant, transformed and named", "src/{controllers|dashed:type}/file.js", map[int]string{0: "type"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := Group{
-				str:  tt.fields.str,
-				name: tt.fields.name,
-			}
-			if got := g.Name(); got != tt.want {
+			if got := (Group{str: tt.path}).Name(); got != tt.want {
 				t.Errorf("Group.Name() = %v, want %v", got, tt.want)
 			}
 		})
@@ -383,7 +382,7 @@ func TestFilePattern_Expr(t *testing.T) {
 	}
 }
 
-func TestFilePattern_GroupNames(t *testing.T) {
+func TestFilePattern_GroupMatches(t *testing.T) {
 	type fields struct {
 		Path           string
 		ConstantGroups map[string]string
@@ -391,44 +390,13 @@ func TestFilePattern_GroupNames(t *testing.T) {
 	tests := []struct {
 		name string
 		path string
-		want map[int]string
-	}{
-		{"empty", "", map[int]string{}},
-		{"named", "{**:path}/file.js", map[int]string{0: "path"}},
-		{"transformed", "{**|dashed}/file.js", map[int]string{0: "path"}},
-		{"named and transformed", "{**|dashed:path}/file.js", map[int]string{0: "path"}},
-		{"constant", "src/{controllers}/file.js", map[int]string{0: "path"}},
-		{"constant and named", "src/{controllers:type}/file.js", map[int]string{0: "type"}},
-		{"constant, transformed and named", "src/{controllers|dashed:type}/file.js", map[int]string{0: "type"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := fp(tt.path).GroupNames(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FilePattern.GroupNames() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestFilePattern_GroupMatches(t *testing.T) {
-	type fields struct {
-		Path           string
-		ConstantGroups map[string]string
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		want   []Group
+		want []Group
 	}{
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fp := FilePattern{
-				Path:           tt.fields.Path,
-				ConstantGroups: tt.fields.ConstantGroups,
-			}
-			if got := fp.GroupMatches(); !reflect.DeepEqual(got, tt.want) {
+			if got := fp(tt.path).GroupMatches(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FilePattern.GroupMatches() = %v, want %v", got, tt.want)
 			}
 		})

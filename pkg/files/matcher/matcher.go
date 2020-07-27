@@ -137,21 +137,6 @@ func (fp FilePattern) Expr() *regexp.Regexp {
 	return regexp.MustCompile(toExpr(fp.Path))
 }
 
-func (fp FilePattern) GroupNames() map[int]string {
-	matches := wildcards.FindAllStringSubmatch(fp.Path, -1)
-
-	groups := map[int]string{}
-
-	for idx, m := range matches {
-		groups[idx] = m[wildcardIdxName]
-	}
-
-	if len(groups) == 1 && groups[0] == "" {
-		groups[0] = "path"
-	}
-
-	return groups
-}
 
 func (fp FilePattern) GroupMatches() []Group {
 	matches := wildcards.FindAllString(fp.Path, -1)
@@ -219,12 +204,12 @@ func (fp FilePattern) Fill(groupValues map[string]string) (string, error) {
 }
 
 func (fp FilePattern) Groups(filePath string) map[string]string {
-	gn := fp.GroupNames()
+	gn := fp.GroupMatches()
 	matches := fp.Expr().FindStringSubmatch(filePath)
 
 	groups := map[string]string{}
 	for idx, m := range matches[1:] {
-		groups[gn[idx]] = m
+		groups[gn[idx].Name()] = m
 	}
 
 	return groups
