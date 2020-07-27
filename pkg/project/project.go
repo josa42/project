@@ -188,11 +188,23 @@ func (ft FileType) isRelated(key string) bool {
 }
 
 func patternOrSlice(in interface{}) []matcher.FilePattern {
-	patterns := []matcher.FilePattern{}
-	for _, p := range stringOrSlice(in) {
-		patterns = append(patterns, matcher.FilePattern(p))
+	rel := []matcher.FilePattern{}
+
+	if v, ok := in.(string); ok {
+		rel = append(rel, matcher.FilePattern{
+			Path: v,
+		})
+	} else if v, ok := in.([]interface{}); ok {
+		for _, r := range v {
+			if rv, ok := r.(string); ok {
+				rel = append(rel, matcher.FilePattern{
+					Path: rv,
+				})
+			}
+		}
 	}
-	return patterns
+
+	return rel
 }
 
 func stringOrSlice(in interface{}) []string {
@@ -209,7 +221,6 @@ func stringOrSlice(in interface{}) []string {
 	}
 
 	return rel
-
 }
 
 type Task struct {

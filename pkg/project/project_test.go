@@ -26,6 +26,16 @@ func fixture(p ...string) string {
 	return filepath.Join(append([]string{rootPath, "testdata"}, p...)...)
 }
 
+func fps(ps ...string) []matcher.FilePattern {
+	fps := []matcher.FilePattern{}
+	for _, p := range ps {
+		fps = append(fps, matcher.FilePattern{
+			Path: p,
+		})
+	}
+	return fps
+}
+
 func TestFileType(t *testing.T) {
 	t.Run("single", func(t *testing.T) {
 		ft := FileType{}
@@ -36,8 +46,8 @@ exclude: controllers/{*}.test.js
 related: view`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.js"}, ft.PathPatterns)
-		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.test.js"}, ft.ExcludePatterns)
+		assert.Equal(t, fps("controllers/{*}.js"), ft.PathPatterns)
+		assert.Equal(t, fps("controllers/{*}.test.js"), ft.ExcludePatterns)
 		assert.Equal(t, []string{"view"}, ft.RelatedKeys)
 	})
 
@@ -54,8 +64,8 @@ related:
   - test`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.js", "sub/controllers/{*}.js"}, ft.PathPatterns)
-		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.test.js"}, ft.ExcludePatterns)
+		assert.Equal(t, fps("controllers/{*}.js", "sub/controllers/{*}.js"), ft.PathPatterns)
+		assert.Equal(t, fps("controllers/{*}.test.js"), ft.ExcludePatterns)
 		assert.Equal(t, []string{"view", "test"}, ft.RelatedKeys)
 	})
 
@@ -78,7 +88,7 @@ func TestLoadProjeFile(t *testing.T) {
 	assert.Equal(t, "go test ./...", proj.Tasks["test"].Command)
 
 	assert.Equal(t, "test", proj.Files["test"].Key)
-	assert.Equal(t, []matcher.FilePattern{"{**}_test.go"}, proj.Files["test"].PathPatterns)
+	assert.Equal(t, fps("{**}_test.go"), proj.Files["test"].PathPatterns)
 	assert.Equal(t, []string{"source"}, proj.Files["test"].RelatedKeys)
 }
 

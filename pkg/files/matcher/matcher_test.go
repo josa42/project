@@ -5,6 +5,12 @@ import (
 	"testing"
 )
 
+func fp(p string) FilePattern {
+	return FilePattern{
+		Path: p,
+	}
+}
+
 func TestFindFiles(t *testing.T) {
 	type args struct {
 		dir     string
@@ -115,7 +121,7 @@ func TestFilePattern_Match(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		fp   FilePattern
+		fp   string
 		args args
 		want map[string]string
 	}{
@@ -129,7 +135,7 @@ func TestFilePattern_Match(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.fp.Match(tt.args.path); !reflect.DeepEqual(got, tt.want) {
+			if got := fp(tt.fp).Match(tt.args.path); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FilePattern.Match() = %v, want %v", got, tt.want)
 			}
 		})
@@ -182,7 +188,7 @@ func TestFilePattern_Fill(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		fp      FilePattern
+		fp      string
 		args    args
 		want    string
 		wantErr bool
@@ -195,7 +201,7 @@ func TestFilePattern_Fill(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.fp.Fill(tt.args.groups)
+			got, err := fp(tt.fp).Fill(tt.args.groups)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FilePattern.Fill() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -234,7 +240,7 @@ func TestFilePattern_Groups(t *testing.T) {
 	}
 	tests := []struct {
 		name string
-		fp   FilePattern
+		fp   string
 		args args
 		want map[string]string
 	}{
@@ -245,7 +251,7 @@ func TestFilePattern_Groups(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.fp.Groups(tt.args.filePath); !reflect.DeepEqual(got, tt.want) {
+			if got := fp(tt.fp).Groups(tt.args.filePath); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("FilePattern.Groups() = %v, want %v", got, tt.want)
 			}
 		})

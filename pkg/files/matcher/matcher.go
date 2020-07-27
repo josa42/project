@@ -112,17 +112,23 @@ func cd(dir string) func() {
 	}
 }
 
-type FilePattern string
+type FilePattern struct {
+	Path string
+}
+
+func (fp FilePattern) String() string {
+	return fp.Path
+}
 
 func (fp FilePattern) Find(dir string) []string {
-	pattern := toGlobPattern(string(fp))
+	pattern := toGlobPattern(fp.Path)
 	return findFiles(dir, pattern)
 }
 
 func (fp FilePattern) Match(path string) map[string]string {
 
-	gn := groupNames(string(fp))
-	exp := regexp.MustCompile(toExpr(string(fp)))
+	gn := groupNames(fp.Path)
+	exp := regexp.MustCompile(toExpr(fp.Path))
 	matches := exp.FindAllStringSubmatch(path, -1)
 
 	if len(matches) > 0 {
@@ -141,10 +147,10 @@ func (fp FilePattern) Match(path string) map[string]string {
 
 func (fp FilePattern) Fill(groups map[string]string) (string, error) {
 
-	matches := wildcards.FindAllStringSubmatch(string(fp), -1)
-	gn := groupNames(string(fp))
+	matches := wildcards.FindAllStringSubmatch(fp.Path, -1)
+	gn := groupNames(fp.Path)
 
-	path := string(fp)
+	path := fp.Path
 	for idx, m := range matches {
 		name := gn[idx]
 
@@ -159,8 +165,8 @@ func (fp FilePattern) Fill(groups map[string]string) (string, error) {
 }
 
 func (fp FilePattern) Groups(filePath string) map[string]string {
-	gn := groupNames(string(fp))
-	exp := regexp.MustCompile(toExpr(string(fp)))
+	gn := groupNames(fp.Path)
+	exp := regexp.MustCompile(toExpr(fp.Path))
 	matches := exp.FindStringSubmatch(filePath)
 
 	groups := map[string]string{}
