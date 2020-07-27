@@ -122,10 +122,10 @@ func TestProject_RelatedFiles(t *testing.T) {
 		{"ember controller => test", "emberjs-1", args{"test", "app/controllers/account/billing.js"}, []string{
 			"tests/unit/controllers/account/billing-test.js",
 		}},
-		// {"ember controller => route", "emberjs-1", args{"route", "app/controllers/account/billing.js"}, []string{
-		// 	"app/routes/account/billing.js",
-		// }},
-		{"ember controller", "emberjs-1", args{"template", "app/controllers/account/billing.js"}, []string{
+		{"ember controller => route", "emberjs-1", args{"route", "app/controllers/account/billing.js"}, []string{
+			"app/routes/account/billing.js",
+		}},
+		{"ember controller => template", "emberjs-1", args{"template", "app/controllers/account/billing.js"}, []string{
 			"app/templates/account/billing.hbs",
 		}},
 		{"ember route => test", "emberjs-1", args{"test", "app/routes/account/billing.js"}, []string{

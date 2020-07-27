@@ -4,7 +4,7 @@ files:
     related: ['test', 'template']
   controller:
     path: 'app/{controllers:type}/{**:path}.js'
-    related: ['test', 'route', 'template']
+    related: ['test', 'route': {type: 'routes'}, 'template']
   route:
     path: 'app/{routes:type}/{**:path}.js'
     related: ['test', 'controller', 'template']

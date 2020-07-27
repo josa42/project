@@ -43,7 +43,11 @@ func completeRelatedKey(p *plugin.Plugin) func(args []interface{}) ([]string, er
 	return func(args []interface{}) ([]string, error) {
 		proj := project.MustLoad(".")
 		filePath := currentFilePath(p)
-		keys := proj.RelatedKeys(filePath)
+		keys := []string{}
+
+		for _, rk := range proj.RelatedKeys(filePath) {
+			keys = append(keys, rk.String())
+		}
 
 		return keys, nil
 	}

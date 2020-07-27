@@ -78,8 +78,8 @@ func (p Project) FindFiles(key string) []string {
 	return files
 }
 
-func (p Project) RelatedKeys(filePath string) []string {
-	keys := []string{}
+func (p Project) RelatedKeys(filePath string) []RelatedKey {
+	keys := []RelatedKey{}
 
 	for _, ft := range p.Files {
 		if ft.isMatching(filePath) {
@@ -90,14 +90,14 @@ func (p Project) RelatedKeys(filePath string) []string {
 	return keys
 }
 
-func (p Project) AllRelatedFiles(filePath string) ([]string, map[string]string) {
+func (p Project) AllRelatedFiles(filePath string) ([]RelatedKey, map[string]string) {
 	related := map[string]string{}
-	keys := []string{}
+	keys := []RelatedKey{}
 
 	for _, key := range p.RelatedKeys(filePath) {
 		for _, file := range p.RelatedFiles(key, filePath) {
 			if _, err := os.Stat(file); err == nil {
-				related[key] = file
+				related[key.String()] = file
 				keys = append(keys, key)
 				break
 			}
@@ -107,10 +107,10 @@ func (p Project) AllRelatedFiles(filePath string) ([]string, map[string]string) 
 	return keys, related
 }
 
-func (p Project) RelatedFiles(key, filePath string) []string {
+func (p Project) RelatedFiles(key RelatedKey, filePath string) []string {
 	files := []string{}
 
-	ftr, ok := p.Files[key]
+	ftr, ok := p.Files[key.String()]
 	if !ok {
 		return []string{}
 	}
@@ -137,11 +137,17 @@ func (p Project) RelatedFiles(key, filePath string) []string {
 	return files
 }
 
+type RelatedKey string
+
+func (rk RelatedKey) String() string {
+	return string(rk)
+}
+
 type FileType struct {
 	Key             string                `yaml:"-"`
 	PathPatterns    []matcher.FilePattern `yaml:"path"`
 	ExcludePatterns []matcher.FilePattern `yaml:"exclude"`
-	RelatedKeys     []string              `yaml:"related"`
+	RelatedKeys     []RelatedKey          `yaml:"related"`
 }
 
 func (ft *FileType) UnmarshalYAML(unmarshal func(interface{}) error) error {
@@ -153,7 +159,7 @@ func (ft *FileType) UnmarshalYAML(unmarshal func(interface{}) error) error {
 
 	ft.PathPatterns = patternOrSlice(d["path"])
 	ft.ExcludePatterns = patternOrSlice(d["exclude"])
-	ft.RelatedKeys = stringOrSlice(d["related"])
+	ft.RelatedKeys = relatedKeyOrSlice(d["related"])
 
 	return nil
 }
@@ -178,9 +184,9 @@ func (ft FileType) isMatching(filePath string) bool {
 	return false
 }
 
-func (ft FileType) isRelated(key string) bool {
+func (ft FileType) isRelated(key RelatedKey) bool {
 	for _, akey := range ft.RelatedKeys {
-		if akey == key {
+		if akey.String() == key.String() {
 			return true
 		}
 	}
@@ -242,6 +248,22 @@ func stringOrSlice(in interface{}) []string {
 		for _, r := range v {
 			if rv, ok := r.(string); ok {
 				rel = append(rel, rv)
+			}
+		}
+	}
+
+	return rel
+}
+
+func relatedKeyOrSlice(in interface{}) []RelatedKey {
+	rel := []RelatedKey{}
+
+	if v, ok := in.(string); ok {
+		rel = append(rel, RelatedKey(v))
+	} else if v, ok := in.([]interface{}); ok {
+		for _, r := range v {
+			if rv, ok := r.(string); ok {
+				rel = append(rel, RelatedKey(rv))
 			}
 		}
 	}
