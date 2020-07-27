@@ -1,0 +1,22 @@
+files:
+  component:
+    path: 'app/{components:type}/{**:path}.js'
+    related: ['test', 'template']
+  controller:
+    path: 'app/{controllers:type}/{**:path}.js'
+    related: ['test', 'route', 'template']
+  route:
+    path: 'app/{routes:type}/{**:path}.js'
+    related: ['test', 'controller', 'template']
+  template:
+    path:
+      - 'app/templates/{components:type}/{**:path}.hbs'
+      - 'app/templates/{**:path}.hbs'
+    related: ['components', 'controller', 'route', 'component']
+  test:
+    path:
+      - 'tests/unit/{components:type}/{**:path}-test.js'
+      - 'tests/unit/{controllers:type}/{**:path}-test.js'
+      - 'tests/unit/{routes:type}/{**:path}-test.js'
+    related: ['controller', 'route']
+

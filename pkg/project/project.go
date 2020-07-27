@@ -110,17 +110,23 @@ func (p Project) AllRelatedFiles(filePath string) ([]string, map[string]string) 
 func (p Project) RelatedFiles(key, filePath string) []string {
 	files := []string{}
 
-	ftr := p.Files[key]
+	ftr, ok := p.Files[key]
+	if !ok {
+		return []string{}
+	}
 
 	for _, ft := range p.Files {
 		if ft.isRelated(key) {
+
 			for _, fp := range ft.PathPatterns {
-				if !ft.isExcluded(filePath) && len(fp.Match(filePath)) > 0 {
+
+				if len(fp.Match(filePath)) > 0 {
 					g := fp.Groups(filePath)
 
 					for _, fpr := range ftr.PathPatterns {
 						if rPath, err := fpr.Fill(g); err == nil {
 							files = append(files, rPath)
+							break
 						}
 					}
 				}

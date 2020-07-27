@@ -161,11 +161,11 @@ func (fp FilePattern) Fill(groups map[string]string) (string, error) {
 func (fp FilePattern) Groups(filePath string) map[string]string {
 	gn := groupNames(string(fp))
 	exp := regexp.MustCompile(toExpr(string(fp)))
-	matches := exp.FindAllStringSubmatch(filePath, -1)
+	matches := exp.FindStringSubmatch(filePath)
 
 	groups := map[string]string{}
-	for idx, m := range matches {
-		groups[gn[idx]] = m[wildcardIdxPattern]
+	for idx, m := range matches[1:] {
+		groups[gn[idx]] = m
 	}
 
 	return groups

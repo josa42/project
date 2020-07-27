@@ -2,13 +2,24 @@ package project
 
 import (
 	"os"
+	"path"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/josa42/project/pkg/files/matcher"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 )
+
+func fixtureDir(dir string) func() {
+	pwd, _ := os.Getwd()
+	os.Chdir(path.Join("testdata", dir))
+
+	return func() {
+		os.Chdir(pwd)
+	}
+}
 
 func fixture(p ...string) string {
 	rootPath, _ := os.Getwd()
@@ -69,4 +80,53 @@ func TestLoadProjeFile(t *testing.T) {
 	assert.Equal(t, "test", proj.Files["test"].Key)
 	assert.Equal(t, []matcher.FilePattern{"{**}_test.go"}, proj.Files["test"].PathPatterns)
 	assert.Equal(t, []string{"source"}, proj.Files["test"].RelatedKeys)
+}
+
+func TestProject_RelatedFiles(t *testing.T) {
+	type args struct {
+		key      string
+		filePath string
+	}
+	tests := []struct {
+		name string
+		dir  string
+		args args
+		want []string
+	}{
+		{"ember controler => test", "emberjs-1", args{"test", "app/controllers/account/billing.js"}, []string{
+			"tests/unit/controllers/account/billing-test.js",
+		}},
+		// {"ember controler => route", "emberjs-1", args{"route", "app/controllers/account/billing.js"}, []string{
+		// 	"app/routes/account/billing.js",
+		// }},
+		{"ember controler", "emberjs-1", args{"template", "app/controllers/account/billing.js"}, []string{
+			"app/templates/account/billing.hbs",
+		}},
+		{"ember route => test", "emberjs-1", args{"test", "app/routes/account/billing.js"}, []string{
+			"tests/unit/routes/account/billing-test.js",
+		}},
+		// {"ember route => controller", "emberjs-1", args{"controller", "app/routes/account/billing.js"}, []string{
+		// 	"app/controllers/account/billing.js",
+		// }},
+		{"ember route => template", "emberjs-1", args{"template", "app/routes/account/billing.js"}, []string{
+			"app/templates/account/billing.hbs",
+		}},
+		{"ember component => test", "emberjs-1", args{"test", "app/components/my-component.js"}, []string{
+			"tests/unit/components/my-component-test.js",
+		}},
+		{"ember component => template", "emberjs-1", args{"template", "app/components/my-component.js"}, []string{
+			"app/templates/components/my-component.hbs",
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+
+			defer fixtureDir(tt.dir)()
+			p := MustLoad(".")
+
+			if got := p.RelatedFiles(tt.args.key, tt.args.filePath); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Project.RelatedFiles() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }
