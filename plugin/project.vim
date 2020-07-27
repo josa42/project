@@ -36,3 +36,5 @@ command! -nargs=0 -bang AV call Alternate('vsplit<bang>')
 
 nmap <silent> <space>o :call ProjectOpen(g:project_default_command)<cr>
 nmap <silent> <space>a :call Alternate(g:project_default_command)<cr>
+nmap <silent> <space>t :call Alternate(g:project_default_command, 'test')<cr>
+
