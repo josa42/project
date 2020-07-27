@@ -70,6 +70,9 @@ func Test_toExpr(t *testing.T) {
 		{"named", args{`dir/{*:path}.js`}, `dir/([^/]+)\.js`},
 		{"named 2", args{`{**:path}/file.js`}, `(.+)/file\.js`},
 		{"transform and named", args{`dir/{*|dashed:path}.js`}, `dir/([^/]+)\.js`},
+		{"constant", args{"src/{controlers}/file.js"}, `src/(controlers)/file\.js`},
+		{"constant and named", args{"src/{controlers:type}/file.js"}, `src/(controlers)/file\.js`},
+		{"constant, transformed and named", args{"src/{controlers|dashed:type}/file.js"}, `src/(controlers)/file\.js`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -93,6 +96,9 @@ func Test_groupNames(t *testing.T) {
 		{"named", args{"{**:path}/file.js"}, map[int]string{0: "path"}},
 		{"transformed", args{"{**|dashed}/file.js"}, map[int]string{0: "path"}},
 		{"named and transformed", args{"{**|dashed:path}/file.js"}, map[int]string{0: "path"}},
+		{"constant", args{"src/{controlers}/file.js"}, map[int]string{0: "path"}},
+		{"constant and named", args{"src/{controlers:type}/file.js"}, map[int]string{0: "type"}},
+		{"constant, transformed and named", args{"src/{controlers|dashed:type}/file.js"}, map[int]string{0: "type"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -117,6 +123,9 @@ func TestFilePattern_Match(t *testing.T) {
 		{"named", "{**:path}/file.js", args{"foo/bar/file.js"}, map[string]string{"path": "foo/bar"}},
 		{"transformed", "{**|dashed}/file.js", args{"foo/bar/file.js"}, map[string]string{"path": "foo/bar"}},
 		{"named and transformed", "{**|dashed:path}/file.js", args{"foo/bar/file.js"}, map[string]string{"path": "foo/bar"}},
+		{"constant", "src/{controlers}/file.js", args{"src/controlers/file.js"}, map[string]string{"path": "controlers"}},
+		{"constant and named", "src/{controlers:type}/file.js", args{"src/controlers/file.js"}, map[string]string{"type": "controlers"}},
+		{"constant, transformed and named", "src/{controlers|dashed:type}/file.js", args{"src/controlers/file.js"}, map[string]string{"type": "controlers"}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -179,6 +188,10 @@ func TestFilePattern_Fill(t *testing.T) {
 		wantErr bool
 	}{
 		{"basic", "src/{*}.js", args{map[string]string{"path": "foo"}}, "src/foo.js", false},
+		{"constant", "src/{controlers}/file.js", args{map[string]string{"path": "controlers"}}, "src/controlers/file.js", false},
+		{"constant and named", "src/{controlers:type}/file.js", args{map[string]string{"type": "controlers"}}, "src/controlers/file.js", false},
+		{"constant, transformed and named", "src/{controlers|dashed:type}/file.js", args{map[string]string{"type": "controlers"}}, "src/controlers/file.js", false},
+		// {"constant | error", "src/{controlers}/file.js", args{map[string]string{"path": "models"}}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

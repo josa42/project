@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	wildcards = regexp.MustCompile(`{(\*\*?)(\|([^:}]+))?(:([a-z]+))?}`)
+	wildcards = regexp.MustCompile(`{(\*\*?|[^:\|]+)(\|([^:}]+))?(:([a-z]+))?}`)
 )
 
 func findFiles(dir, pattern string) []string {
@@ -91,7 +91,7 @@ func starToExpr(star string) string {
 	case "**":
 		return `(.+)`
 	default:
-		return star
+		return fmt.Sprintf("(%s)", regexp.QuoteMeta(star))
 	}
 }
 
@@ -126,7 +126,6 @@ func (fp FilePattern) Match(path string) map[string]string {
 		}
 
 		return groups
-
 	}
 
 	return nil
