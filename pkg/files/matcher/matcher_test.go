@@ -191,7 +191,7 @@ func TestFilePattern_Fill(t *testing.T) {
 		{"constant", "src/{controlers}/file.js", args{map[string]string{"path": "controlers"}}, "src/controlers/file.js", false},
 		{"constant and named", "src/{controlers:type}/file.js", args{map[string]string{"type": "controlers"}}, "src/controlers/file.js", false},
 		{"constant, transformed and named", "src/{controlers|dashed:type}/file.js", args{map[string]string{"type": "controlers"}}, "src/controlers/file.js", false},
-		// {"constant | error", "src/{controlers}/file.js", args{map[string]string{"path": "models"}}, "", true},
+		{"constant | error", "src/{controlers}/file.js", args{map[string]string{"path": "models"}}, "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,6 +1,7 @@
 package matcher
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,6 +14,13 @@ import (
 
 var (
 	wildcards = regexp.MustCompile(`{(\*\*?|[^:\|]+)(\|([^:}]+))?(:([a-z]+))?}`)
+)
+
+const (
+	wildcardIdxComplete  = 0
+	wildcardIdxPattern   = 1
+	wildcardIdxTransform = 3
+	wildcardIdxName      = 5
 )
 
 func findFiles(dir, pattern string) []string {
@@ -30,7 +38,7 @@ func toGlobPattern(pattern string) string {
 	matches := wildcards.FindAllStringSubmatch(pattern, -1)
 
 	for _, m := range matches {
-		pattern = strings.Replace(pattern, m[0], starToGlob(m[1]), 1)
+		pattern = strings.Replace(pattern, m[wildcardIdxComplete], starToGlob(m[wildcardIdxPattern]), 1)
 	}
 
 	return pattern
@@ -43,9 +51,9 @@ func toExpr(pattern string) string {
 
 	for idx, m := range matches {
 		placeholder := fmt.Sprintf(`::::####%d####:::`, idx)
-		pattern = strings.Replace(pattern, m[0], placeholder, 1)
+		pattern = strings.Replace(pattern, m[wildcardIdxComplete], placeholder, 1)
 
-		replaces[placeholder] = starToExpr(m[1])
+		replaces[placeholder] = starToExpr(m[wildcardIdxPattern])
 	}
 
 	pattern = regexp.QuoteMeta(pattern)
@@ -63,7 +71,7 @@ func groupNames(pattern string) map[int]string {
 	groups := map[int]string{}
 
 	for idx, m := range matches {
-		groups[idx] = m[5]
+		groups[idx] = m[wildcardIdxName]
 	}
 
 	if len(groups) == 1 && groups[0] == "" {
@@ -122,7 +130,7 @@ func (fp FilePattern) Match(path string) map[string]string {
 
 		for idx, m := range matches {
 			name := gn[idx]
-			groups[name] = m[1]
+			groups[name] = m[wildcardIdxPattern]
 		}
 
 		return groups
@@ -139,7 +147,12 @@ func (fp FilePattern) Fill(groups map[string]string) (string, error) {
 	path := string(fp)
 	for idx, m := range matches {
 		name := gn[idx]
-		path = strings.Replace(path, m[0], groups[name], 1)
+
+		if isConstantGroup(m[wildcardIdxPattern]) && m[wildcardIdxPattern] != groups[name] {
+			return "", errors.New("const group not matching")
+		}
+
+		path = strings.Replace(path, m[wildcardIdxComplete], groups[name], 1)
 	}
 
 	return path, nil
@@ -152,8 +165,12 @@ func (fp FilePattern) Groups(filePath string) map[string]string {
 
 	groups := map[string]string{}
 	for idx, m := range matches {
-		groups[gn[idx]] = m[1]
+		groups[gn[idx]] = m[wildcardIdxPattern]
 	}
 
 	return groups
+}
+
+func isConstantGroup(s string) bool {
+	return s != "*" && s != "**"
 }
