@@ -121,7 +121,7 @@ func (p Project) RelatedFiles(key, filePath string) []string {
 			for _, fp := range ft.PathPatterns {
 
 				if len(fp.Match(filePath)) > 0 {
-					g := fp.Groups(filePath)
+					g := fp.GroupValues(filePath)
 
 					for _, fpr := range ftr.PathPatterns {
 						if rPath, err := fpr.Fill(g); err == nil {
