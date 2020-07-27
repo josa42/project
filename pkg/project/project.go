@@ -115,19 +115,16 @@ func (p Project) RelatedFiles(key, filePath string) []string {
 		return []string{}
 	}
 
-	for _, ft := range p.Files {
+	for _, ft := range p.TypeTypes(filePath) {
 		if ft.isRelated(key) {
-
 			for _, fp := range ft.PathPatterns {
 
-				if len(fp.Match(filePath)) > 0 {
-					g := fp.GroupValues(filePath)
+				g := fp.GroupValues(filePath)
 
-					for _, fpr := range ftr.PathPatterns {
-						if rPath, err := fpr.Fill(g); err == nil {
-							files = append(files, rPath)
-							break
-						}
+				for _, fpr := range ftr.PathPatterns {
+					if rPath, err := fpr.Fill(g); err == nil {
+						files = append(files, rPath)
+						break
 					}
 				}
 			}
@@ -135,6 +132,20 @@ func (p Project) RelatedFiles(key, filePath string) []string {
 	}
 
 	return files
+}
+
+func (p Project) TypeTypes(filePath string) []FileType {
+
+	fts := []FileType{}
+
+	for _, ft := range p.Files {
+		if ft.isMatching(filePath) {
+			fts = append(fts, ft)
+		}
+	}
+
+	return fts
+
 }
 
 type FileType struct {
