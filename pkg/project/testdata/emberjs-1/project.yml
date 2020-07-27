@@ -12,6 +12,7 @@ files:
     path:
       - 'app/templates/{components:type}/{**:path}.hbs'
       - 'app/templates/{**:path}.hbs': { type: 'controller' }
+      - 'app/templates/{**:path}.hbs': { type: 'route' }
     related: ['components', 'controller', 'route', 'component']
   test:
     path:
