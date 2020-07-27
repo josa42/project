@@ -76,8 +76,13 @@ related:
 path:
   - 'templates/{*}.hbs': { type: 'controller' }`), &ft)
 
+		fpExpect := []matcher.FilePattern{{
+			Path:           "templates/{*}.hbs",
+			ConstantGroups: map[string]string{"type": "controller"},
+		}}
+
 		assert.Nil(t, err)
-		assert.Equal(t, fps("templates/{*}.hbs"), ft.PathPatterns)
+		assert.Equal(t, fpExpect, ft.PathPatterns)
 	})
 
 }

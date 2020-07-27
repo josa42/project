@@ -187,6 +187,8 @@ func (ft FileType) isRelated(key string) bool {
 	return false
 }
 
+// TODO refactor this 🙈
+
 func patternOrSlice(in interface{}) []matcher.FilePattern {
 	rel := []matcher.FilePattern{}
 
@@ -201,12 +203,27 @@ func patternOrSlice(in interface{}) []matcher.FilePattern {
 					Path: rv,
 				})
 			} else if rv, ok := r.(map[interface{}]interface{}); ok {
-				for p := range rv {
+				for p, pv := range rv {
 					if rv, ok := p.(string); ok {
+						cg := map[string]string{}
+
+						if rv, ok := pv.(map[interface{}]interface{}); ok {
+							for k, v := range rv {
+								key, kok := k.(string)
+								value, vok := v.(string)
+
+								if kok && vok {
+									cg[key] = value
+								}
+							}
+						}
+
 						rel = append(rel, matcher.FilePattern{
-							Path: rv,
+							Path:           rv,
+							ConstantGroups: cg,
 						})
 					}
+
 					break
 				}
 			}
