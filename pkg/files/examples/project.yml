@@ -5,27 +5,27 @@ tasks:
 files:
   model:
     path: src/models/{**}/{*|className}.js
-    related: [view, controler]
-  controler:
-    path: src/controlers/{**}/{*|className}.js
+    related: [view, controller]
+  controller:
+    path: src/controllers/{**}/{*|className}.js
     related:
       - model
       - view
   test:
     path:
       - src/models/{**}/{*|className}.test.js
-      - src/controler/{**}/{*|className}.test.js
+      - src/controller/{**}/{*|className}.test.js
     related:
       - model
-      - controler
+      - controller
   view:
     path: src/templates/{**}/{*|param}.hbs
     related:
       - model
-      - controler
+      - controller
   style:
     path: src/styles/{**}/{*|param}.scss
     related:
       - model
-      - controler
+      - controller
 

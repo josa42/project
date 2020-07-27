@@ -31,13 +31,13 @@ func TestFileType(t *testing.T) {
 		ft := FileType{}
 
 		err := yaml.Unmarshal([]byte(`
-path: controlers/{*}.js
-exclude: controlers/{*}.test.js
+path: controllers/{*}.js
+exclude: controllers/{*}.test.js
 related: view`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.js"}, ft.PathPatterns)
-		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.test.js"}, ft.ExcludePatterns)
+		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.test.js"}, ft.ExcludePatterns)
 		assert.Equal(t, []string{"view"}, ft.RelatedKeys)
 	})
 
@@ -46,16 +46,16 @@ related: view`), &ft)
 
 		err := yaml.Unmarshal([]byte(`
 path:
-  - controlers/{*}.js
-  - sub/controlers/{*}.js
-exclude: [ "controlers/{*}.test.js" ]
+  - controllers/{*}.js
+  - sub/controllers/{*}.js
+exclude: [ "controllers/{*}.test.js" ]
 related:
   - view
   - test`), &ft)
 		assert.Nil(t, err)
 		assert.Equal(t, "", ft.Key)
-		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.js", "sub/controlers/{*}.js"}, ft.PathPatterns)
-		assert.Equal(t, []matcher.FilePattern{"controlers/{*}.test.js"}, ft.ExcludePatterns)
+		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.js", "sub/controllers/{*}.js"}, ft.PathPatterns)
+		assert.Equal(t, []matcher.FilePattern{"controllers/{*}.test.js"}, ft.ExcludePatterns)
 		assert.Equal(t, []string{"view", "test"}, ft.RelatedKeys)
 	})
 
@@ -93,13 +93,13 @@ func TestProject_RelatedFiles(t *testing.T) {
 		args args
 		want []string
 	}{
-		{"ember controler => test", "emberjs-1", args{"test", "app/controllers/account/billing.js"}, []string{
+		{"ember controller => test", "emberjs-1", args{"test", "app/controllers/account/billing.js"}, []string{
 			"tests/unit/controllers/account/billing-test.js",
 		}},
-		// {"ember controler => route", "emberjs-1", args{"route", "app/controllers/account/billing.js"}, []string{
+		// {"ember controller => route", "emberjs-1", args{"route", "app/controllers/account/billing.js"}, []string{
 		// 	"app/routes/account/billing.js",
 		// }},
-		{"ember controler", "emberjs-1", args{"template", "app/controllers/account/billing.js"}, []string{
+		{"ember controller", "emberjs-1", args{"template", "app/controllers/account/billing.js"}, []string{
 			"app/templates/account/billing.hbs",
 		}},
 		{"ember route => test", "emberjs-1", args{"test", "app/routes/account/billing.js"}, []string{
