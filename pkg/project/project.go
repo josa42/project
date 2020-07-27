@@ -200,6 +200,15 @@ func patternOrSlice(in interface{}) []matcher.FilePattern {
 				rel = append(rel, matcher.FilePattern{
 					Path: rv,
 				})
+			} else if rv, ok := r.(map[interface{}]interface{}); ok {
+				for p := range rv {
+					if rv, ok := p.(string); ok {
+						rel = append(rel, matcher.FilePattern{
+							Path: rv,
+						})
+					}
+					break
+				}
 			}
 		}
 	}

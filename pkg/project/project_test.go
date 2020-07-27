@@ -69,6 +69,17 @@ related:
 		assert.Equal(t, []string{"view", "test"}, ft.RelatedKeys)
 	})
 
+	t.Run("predefined groups", func(t *testing.T) {
+		ft := FileType{}
+
+		err := yaml.Unmarshal([]byte(`
+path:
+  - 'templates/{*}.hbs': { type: 'controller' }`), &ft)
+
+		assert.Nil(t, err)
+		assert.Equal(t, fps("templates/{*}.hbs"), ft.PathPatterns)
+	})
+
 }
 
 func TestFindProjeFile(t *testing.T) {
