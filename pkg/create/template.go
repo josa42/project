@@ -64,6 +64,7 @@ func (t *Template) Create(baseDir string) error {
 	t.CreateReadme(baseDir, c)
 	t.CreateLicense(baseDir, c)
 	t.CreateFileTree(baseDir, c)
+	t.RunGitInit(baseDir, c)
 	t.RunInit(baseDir, c)
 	t.RunCommit(baseDir, c)
 
@@ -109,12 +110,18 @@ func (t *Template) RunInit(baseDir string, config *Config) error {
 	return nil
 }
 
-func (t *Template) RunCommit(baseDir string, config *Config) error {
+func (t *Template) RunGitInit(baseDir string, config *Config) error {
 	out.Logf("Run: Commit")
 
 	if err := run(baseDir, "git", "init"); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (t *Template) RunCommit(baseDir string, config *Config) error {
+	out.Logf("Run: Commit")
+
 	if err := run(baseDir, "git", "add", "-A"); err != nil {
 		return err
 	}
